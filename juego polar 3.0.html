@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Hiragana Polar Adventure</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #d0eaf5; }
+        
+        #game-area { position: relative; width: 800px; height: 600px; background: url('https://cdn.pixabay.com/photo/2013/02/09/04/32/iceberg-79584_1280.jpg') center/cover; border: 8px solid #fff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); overflow: hidden; display: none; }
+        
+        /* Pingüino estático SVG ajustado */
+        #penguin { position: absolute; bottom: 30px; right: 50px; width: 100px; height: 120px; z-index: 5; }
+        
+        #start-screen { text-align: center; }
+        #title-jp { font-size: 70px; color: #fff; text-shadow: 4px 4px 0px #000; margin-bottom: 5px; }
+        #title-en { font-size: 24px; color: #333; margin-top: 0; margin-bottom: 40px; font-weight: bold; }
+        
+        button { cursor: pointer; border: none; font-weight: bold; transition: transform 0.1s; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
+        button:active { transform: scale(0.95); }
+        .en-sub { font-size: 10px; opacity: 0.6; font-weight: normal; margin-top: 2px; }
+
+        #start-btn { padding: 15px 50px; font-size: 35px; background-color: #4CAF50; color: white; border-radius: 15px; box-shadow: 0 5px #2e7d32; }
+        #pause-btn { position: absolute; top: 15px; right: 15px; background-color: #ff4d4d; color: white; padding: 8px 15px; border-radius: 8px; font-size: 18px; z-index: 100; } 
+        
+        #score-board { position: absolute; top: 15px; left: 15px; color: #003366; font-size: 24px; background: rgba(255, 255, 255, 0.8); padding: 5px 15px; border-radius: 8px; font-weight: bold; z-index: 10; }
+        #hiragana-char { position: absolute; font-size: 90px; font-weight: bold; color: #2c3e50; text-shadow: 2px 2px 10px #fff; width: 100px; text-align: center; }
+        
+        .modal { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,0.5); z-index: 110; min-width: 320px; }
+        #overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90; }
+        
+        .green-btn { background-color: #2ecc71; color: white; padding: 12px 20px; border-radius: 10px; margin: 10px; font-size: 22px; width: 230px;}
+        .blue-btn { background-color: #3498db; color: white; padding: 12px 20px; border-radius: 10px; margin: 10px; font-size: 22px; width: 230px;}
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <h1 id="title-jp">平仮名ポーラー</h1>
+        <h2 id="title-en">Hiragana Polar Adventure</h2>
+        <button id="start-btn" onclick="startGame()">
+            スタート
+            <span class="en-sub">Start</span>
+        </button>
+    </div>
+
+    <div id="game-area">
+        <div id="overlay"></div>
+        <div id="score-board">Score: <span id="score-val">0</span></div>
+        <button id="pause-btn" onclick="togglePause()">
+            一時停止
+            <span class="en-sub" style="color:white;">Pause</span>
+        </button>
+        <div id="hiragana-char"></div>
+        
+        <div id="penguin">
+            <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="35" cy="15" rx="10" ry="8" fill="#FFB6C1" transform="rotate(-15 35 15)"/>
+                <ellipse cx="35" cy="15" rx="4" ry="4" fill="#FF69B4" transform="rotate(-15 35 15)"/>
+                <ellipse cx="50" cy="70" rx="35" ry="45" fill="#2c3e50"/>
+                <ellipse cx="50" cy="75" rx="25" ry="35" fill="white"/>
+                <circle cx="50" cy="40" r="25" fill="#2c3e50"/>
+                <ellipse cx="50" cy="45" rx="18" ry="18" fill="white"/>
+                <circle cx="42" cy="42" r="3" fill="black"/>
+                <circle cx="58" cy="42" r="3" fill="black"/>
+                <polygon points="50,50 46,56 54,56" fill="#f1c40f"/>
+                <ellipse cx="40" cy="110" rx="8" ry="5" fill="#e67e22"/>
+                <ellipse cx="60" cy="110" rx="8" ry="5" fill="#e67e22"/>
+            </svg>
+        </div>
+
+        <div id="fail-modal" class="modal">
+            <h2 style="font-size: 40px; margin-bottom: 10px;">残念！</h2>
+            <p style="margin-bottom: 20px; font-weight: bold;">You need 100 points to continue.</p>
+            
+            <button class="green-btn" onclick="tryContinue()">
+                続行する
+                <span class="en-sub">Pay 100 pts & Continue</span>
+            </button>
+            <br>
+            <button class="blue-btn" onclick="location.reload()">
+                終了する
+                <span class="en-sub">Give Up / Quit</span>
+            </button>
+        </div>
+
+        <div id="win-modal" class="modal">
+            <h2 style="font-size: 45px;">よくできました！</h2>
+            <p style="font-size: 22px; color: #2e7d32;">Otsukaresama!</p>
+            <button class="blue-btn" onclick="location.reload()">
+                もう一度
+                <span class="en-sub">Play Again</span>
+            </button>
+        </div>
+    </div>
+
+<script>
+    const alphabet = [
+        {h:'あ',r:'a'},{h:'い',r:'i'},{h:'う',r:'u'},{h:'え',r:'e'},{h:'お',r:'o'},
+        {h:'か',r:'ka'},{h:'き',r:'ki'},{h:'く',r:'ku'},{h:'け',r:'ke'},{h:'こ',r:'ko'},
+        {h:'さ',r:'sa'},{h:'し',r:'shi'},{h:'す',r:'su'},{h:'せ',r:'se'},{h:'そ',r:'so'},
+        {h:'た',r:'ta'},{h:'ち',r:'chi'},{h:'つ',r:'tsu'},{h:'て',r:'te'},{h:'と',r:'to'},
+        {h:'な',r:'na'},{h:'に',r:'ni'},{h:'ぬ',r:'nu'},{h:'ね',r:'ne'},{h:'の',r:'no'},
+        {h:'は',r:'ha'},{h:'ひ',r:'hi'},{h:'ふ',r:'fu'},{h:'へ',r:'he'},{h:'ほ',r:'ho'},
+        {h:'ま',r:'ma'},{h:'み',r:'mi'},{h:'む',r:'mu'},{h:'め',r:'me'},{h:'も',r:'mo'},
+        {h:'や',r:'ya'},{h:'ゆ',r:'yu'},{h:'よ',r:'yo'},
+        {h:'ら',r:'ra'},{h:'り',r:'ri'},{h:'る',r:'ru'},{h:'れ',r:'re'},{h:'ろ',r:'ro'},
+        {h:'わ',r:'wa'},{h:'を',r:'wo'},{h:'ん',r:'n'}
+    ];
+
+    let idx = 0, score = 0, combo = 0, y = -120, active = false, paused = false, input = "";
+    const charDiv = document.getElementById('hiragana-char'), scoreDiv = document.getElementById('score-val');
+    const overlay = document.getElementById('overlay');
+
+    function startGame() {
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('game-area').style.display = 'block';
+        active = true;
+        spawnChar();
+        requestAnimationFrame(gameLoop);
+    }
+
+    function spawnChar() {
+        if(idx >= alphabet.length) { 
+            active = false; 
+            showModal('win-modal'); 
+            return; 
+        }
+        charDiv.innerText = alphabet[idx].h;
+        charDiv.style.left = (Math.random() * 600) + 100 + 'px';
+        y = -120;
+        input = "";
+    }
+
+    function gameLoop() {
+        if(active && !paused) {
+            y += 0.8; 
+            charDiv.style.top = y + 'px';
+            if(y > 440) {
+                active = false;
+                showModal('fail-modal');
+            }
+        }
+        requestAnimationFrame(gameLoop);
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if(!active || paused || e.key === 'Shift') return;
+        input += e.key.toLowerCase();
+        let target = alphabet[idx].r;
+        if(target.startsWith(input)) {
+            if(input === target) {
+                score += 100;
+                combo++;
+                if(combo % 3 === 0) { score += 500; }
+                scoreDiv.innerText = score;
+                idx++;
+                spawnChar();
+            }
+        } else { input = ""; }
+    });
+
+    function showModal(id) {
+        overlay.style.display = 'block';
+        document.getElementById(id).style.display = 'block';
+    }
+
+    function togglePause() {
+        paused = !paused;
+        const btn = document.getElementById('pause-btn');
+        if(paused) {
+            btn.innerHTML = '再開<span class="en-sub" style="color:white;">Resume</span>';
+            overlay.style.display = 'block';
+        } else {
+            btn.innerHTML = '一時停止<span class="en-sub" style="color:white;">Pause</span>';
+            overlay.style.display = 'none';
+        }
+    }
+
+    function tryContinue() {
+        if(score >= 100) {
+            score -= 100;
+            scoreDiv.innerText = score;
+            document.getElementById('fail-modal').style.display = 'none';
+            overlay.style.display = 'none';
+            active = true;
+            y = -120;
+            input = "";
+        } else {
+            alert("Points insufficient!");
+            location.reload();
+        }
+    }
+</script>
+</body>
+</html>
