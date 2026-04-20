@@ -1,0 +1,121 @@
+:root {
+    --primaryColor: #002e5d;
+    --secondaryColor: #0047ba;
+    --bannerColor: #BFF0FD;
+    --white: #ffffff;
+    --primaryTextColor: #141414;
+    --pageHeadingBg: #f6f6f8;
+    --grey: #f0efed;
+}
+
+/* 1. Fondo y Fuente (Requirement: Background Image & Font Family) */
+body {
+    background-image: url('https://brightspotcdn.byu.edu/3e/26/6be672a9456598e0964147779b76/campus-scenic-1.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+    font-family: "Open Sans", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--primaryTextColor);
+    margin: 0;
+    padding: 40px 20px;
+}
+
+/* 2. Contenedor principal (Requirement: Div styling 1) */
+.main-container {
+    background-color: rgba(255, 255, 255, 0.95);
+    max-width: 1050px;
+    margin: 0 auto;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.3);
+}
+
+.nav-bar {
+    margin-bottom: 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.nav-bar a {
+    color: var(--secondaryColor);
+    text-decoration: none;
+}
+
+/* 3. Header (Requirement: Font Color) */
+.header-section {
+    background-color: var(--primaryColor);
+    color: var(--white);
+    padding: 30px;
+    text-align: center;
+    border-radius: 5px;
+    margin-bottom: 30px;
+}
+
+.header-section h1 {
+    color: var(--white);
+    margin: 0;
+}
+
+/* 4. Bloques de contenido (Requirement: Div styling 2) */
+.content-block {
+    background-color: var(--pageHeadingBg);
+    margin-bottom: 30px;
+    padding: 25px;
+    border-left: 6px solid var(--secondaryColor);
+    border-radius: 4px;
+}
+
+.content-block h2 {
+    color: var(--primaryColor);
+    border-bottom: 2px solid var(--grey);
+    padding-bottom: 10px;
+}
+
+/* 5. Layout para Videos y Juego (Requirement: Div styling 3) */
+.video-grid, .game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+.video-item iframe {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+}
+
+.notes-box {
+    background-color: var(--white);
+    border: 1px solid var(--secondaryColor);
+    padding: 20px;
+    border-radius: 6px;
+    width: 90%;
+    box-shadow: inset 4px 0 0 var(--secondaryColor);
+}
+
+/* Botón Back to Top */
+.back-to-top {
+    background-color: var(--primaryColor);
+    color: white !important;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 20px;
+    font-size: 0.9em;
+    transition: 0.3s;
+}
+
+.back-to-top:hover {
+    background-color: var(--secondaryColor);
+}
+
+.footer-section {
+    text-align: center;
+    margin-top: 50px;
+    border-top: 2px solid var(--primaryColor);
+    padding-top: 20px;
+}
+
+.footer-section img {
+    max-width: 200px;
+}
