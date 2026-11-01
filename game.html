@@ -1,58 +1,185 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Hiragana Polar Adventure</title>
     <style>
-        body { margin: 0; overflow: hidden; font-family: 'Arial', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #d0eaf5; }
-        
-        #game-area { position: relative; width: 800px; height: 600px; background: url('https://cdn.pixabay.com/photo/2013/02/09/04/32/iceberg-79584_1280.jpg') center/cover; border: 8px solid #fff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); overflow: hidden; display: none; }
-        
-        /* Pingüino estático SVG ajustado */
-        #penguin { position: absolute; bottom: 30px; right: 50px; width: 100px; height: 120px; z-index: 5; }
-        
-        #start-screen { text-align: center; }
-        #title-jp { font-size: 70px; color: #fff; text-shadow: 4px 4px 0px #000; margin-bottom: 5px; }
-        #title-en { font-size: 24px; color: #333; margin-top: 0; margin-bottom: 40px; font-weight: bold; }
-        
-        button { cursor: pointer; border: none; font-weight: bold; transition: transform 0.1s; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
-        button:active { transform: scale(0.95); }
-        .en-sub { font-size: 10px; opacity: 0.6; font-weight: normal; margin-top: 2px; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #d0eaf5;
+        }
 
-        #start-btn { padding: 15px 50px; font-size: 35px; background-color: #4CAF50; color: white; border-radius: 15px; box-shadow: 0 5px #2e7d32; }
-        #pause-btn { position: absolute; top: 15px; right: 15px; background-color: #ff4d4d; color: white; padding: 8px 15px; border-radius: 8px; font-size: 18px; z-index: 100; } 
-        
-        #score-board { position: absolute; top: 15px; left: 15px; color: #003366; font-size: 24px; background: rgba(255, 255, 255, 0.8); padding: 5px 15px; border-radius: 8px; font-weight: bold; z-index: 10; }
-        #hiragana-char { position: absolute; font-size: 90px; font-weight: bold; color: #2c3e50; text-shadow: 2px 2px 10px #fff; width: 100px; text-align: center; }
-        
-        .modal { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,0.5); z-index: 110; min-width: 320px; }
-        #overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 90; }
-        
-        .green-btn { background-color: #2ecc71; color: white; padding: 12px 20px; border-radius: 10px; margin: 10px; font-size: 22px; width: 230px;}
-        .blue-btn { background-color: #3498db; color: white; padding: 12px 20px; border-radius: 10px; margin: 10px; font-size: 22px; width: 230px;}
+        #game-area {
+            position: relative;
+            width: min(800px, 100%);
+            height: min(600px, calc(100vh - 40px));
+            min-height: 420px;
+            background: linear-gradient(180deg, #c9efff 0%, #8bcfe8 56%, #f6fdff 56%, #b4e2f1 100%);
+            border: 8px solid #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: none;
+        }
+
+        #start-screen { width: min(720px, 100%); text-align: center; }
+        #title-jp { font-size: clamp(42px, 10vw, 70px); color: #fff; text-shadow: 4px 4px 0 #000; margin: 0 0 5px; }
+        #title-en { font-size: 24px; color: #333; margin: 0 0 16px; }
+        #instructions {
+            margin: 0 auto 18px;
+            padding: 14px 20px;
+            max-width: 600px;
+            background: rgba(255,255,255,.86);
+            border-radius: 12px;
+            text-align: left;
+            color: #23384a;
+            line-height: 1.5;
+        }
+        #instructions h3 { margin: 0 0 5px; }
+        #instructions ol { margin: 0; padding-left: 22px; }
+        #difficulty-panel {
+            margin: 0 auto 20px;
+            padding: 14px;
+            max-width: 600px;
+            background: rgba(255,255,255,.86);
+            border-radius: 12px;
+        }
+        #difficulty-panel h3 { margin: 0 0 4px; }
+        #difficulty-help { margin: 0 0 10px; font-size: 14px; color: #425466; }
+        #row-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+            gap: 7px;
+            text-align: left;
+        }
+        .row-option {
+            padding: 7px 9px;
+            border-radius: 8px;
+            background: #eaf5fb;
+            font-size: 14px;
+        }
+        .row-option input { margin: 0 6px 0 0; vertical-align: middle; }
+        #selected-rows { margin: 9px 0 0; font-size: 13px; font-weight: bold; color: #315b77; }
+
+        button {
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
+            transition: transform 0.1s, opacity 0.1s;
+        }
+        button:active { transform: scale(0.95); }
+        button:disabled { cursor: not-allowed; opacity: .55; }
+        #start-btn {
+            padding: 15px 50px;
+            font-size: 28px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px #2e7d32;
+        }
+        #game-controls { position: absolute; top: 15px; right: 15px; z-index: 100; display: flex; gap: 8px; }
+        #pause-btn, #speed-btn, #exit-btn {
+            color: white;
+            padding: 9px 12px;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        #pause-btn { background-color: #ff4d4d; }
+        #speed-btn { background-color: #276c9e; }
+        #exit-btn { background-color: #59636e; }
+        #score-board {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            color: #003366;
+            font-size: 20px;
+            background: rgba(255,255,255,.88);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 10;
+        }
+        #hiragana-char {
+            position: absolute;
+            font-size: 90px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-shadow: 2px 2px 10px #fff;
+            width: 100px;
+            text-align: center;
+        }
+        #penguin { position: absolute; bottom: 30px; right: 50px; width: 100px; height: 120px; z-index: 5; }
+        .modal {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,.96);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0,0,0,.5);
+            z-index: 110;
+            width: min(400px, calc(100% - 32px));
+        }
+        .modal h2 { margin-top: 0; }
+        #overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,.5); z-index: 90; }
+        .modal-btn { color: white; padding: 12px 20px; border-radius: 10px; margin: 8px; font-size: 18px; width: 100%; max-width: 280px; }
+        .green-btn { background-color: #2ecc71; }
+        .blue-btn { background-color: #3498db; }
+        @media (max-width: 520px) {
+            body { padding: 8px; }
+            #game-area { height: calc(100vh - 16px); min-height: 400px; border-width: 5px; }
+            #score-board { top: 12px; left: 10px; font-size: 16px; }
+            #game-controls { top: 10px; right: 10px; gap: 5px; }
+            #pause-btn, #speed-btn, #exit-btn { padding: 8px; font-size: 13px; }
+            #penguin { right: 20px; }
+            .modal { padding: 22px; }
+        }
     </style>
 </head>
 <body>
+    <main id="start-screen">
+        <h1 id="title-jp">Hiragana Polar Adventure</h1>
+        <h2 id="title-en">A typing adventure on ice</h2>
+        <section id="instructions" aria-labelledby="instructions-title">
+            <h3 id="instructions-title">How to play</h3>
+            <ol>
+                <li>Select one or more hiragana rows to practice. More rows make the game harder.</li>
+                <li>Type the romaji for each falling hiragana character before it reaches the bottom.</li>
+                <li>Earn 100 points for each correct answer. Every third correct answer earns a 500-point combo bonus.</li>
+                <li>If you miss a character, spend 100 points to continue, or start a new game.</li>
+            </ol>
+        </section>
+        <section id="difficulty-panel" aria-labelledby="difficulty-title">
+            <h3 id="difficulty-title">Choose your difficulty</h3>
+            <p id="difficulty-help">Each selected row adds its characters to the randomized quiz.</p>
+            <div id="row-options"></div>
+            <p id="selected-rows" aria-live="polite"></p>
+        </section>
+        <button id="start-btn" type="button" onclick="startGame()">Start Game</button>
+    </main>
 
-    <div id="start-screen">
-        <h1 id="title-jp">平仮名ポーラー</h1>
-        <h2 id="title-en">Hiragana Polar Adventure</h2>
-        <button id="start-btn" onclick="startGame()">
-            スタート
-            <span class="en-sub">Start</span>
-        </button>
-    </div>
-
-    <div id="game-area">
+    <main id="game-area" aria-label="Hiragana typing game">
         <div id="overlay"></div>
         <div id="score-board">Score: <span id="score-val">0</span></div>
-        <button id="pause-btn" onclick="togglePause()">
-            一時停止
-            <span class="en-sub" style="color:white;">Pause</span>
-        </button>
-        <div id="hiragana-char"></div>
-        
-        <div id="penguin">
+        <div id="game-controls">
+            <button id="speed-btn" type="button" onclick="cycleSpeed()" aria-label="Change falling speed">Speed: Normal</button>
+            <button id="pause-btn" type="button" onclick="togglePause()">Pause</button>
+            <button id="exit-btn" type="button" onclick="exitGame()">Exit</button>
+        </div>
+        <div id="hiragana-char" aria-live="polite"></div>
+
+        <div id="penguin" aria-hidden="true">
             <svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
                 <ellipse cx="35" cy="15" rx="10" ry="8" fill="#FFB6C1" transform="rotate(-15 35 15)"/>
                 <ellipse cx="35" cy="15" rx="4" ry="4" fill="#FF69B4" transform="rotate(-15 35 15)"/>
@@ -68,95 +195,134 @@
             </svg>
         </div>
 
-        <div id="fail-modal" class="modal">
-            <h2 style="font-size: 40px; margin-bottom: 10px;">残念！</h2>
-            <p style="margin-bottom: 20px; font-weight: bold;">You need 100 points to continue.</p>
-            
-            <button class="green-btn" onclick="tryContinue()">
-                続行する
-                <span class="en-sub">Pay 100 pts & Continue</span>
-            </button>
-            <br>
-            <button class="blue-btn" onclick="location.reload()">
-                終了する
-                <span class="en-sub">Give Up / Quit</span>
-            </button>
-        </div>
-
-        <div id="win-modal" class="modal">
-            <h2 style="font-size: 45px;">よくできました！</h2>
-            <p style="font-size: 22px; color: #2e7d32;">Otsukaresama!</p>
-            <button class="blue-btn" onclick="location.reload()">
-                もう一度
-                <span class="en-sub">Play Again</span>
-            </button>
-        </div>
-    </div>
+        <section id="fail-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="fail-title">
+            <h2 id="fail-title">Nice try!</h2>
+            <p>You need 100 points to continue.</p>
+            <button class="modal-btn green-btn" type="button" onclick="tryContinue()">Continue (100 points)</button>
+            <button class="modal-btn blue-btn" type="button" onclick="location.reload()">Quit Game</button>
+        </section>
+        <section id="win-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="win-title">
+            <h2 id="win-title">Great job!</h2>
+            <p>You completed all the selected hiragana.</p>
+            <button class="modal-btn blue-btn" type="button" onclick="location.reload()">Play Again</button>
+        </section>
+    </main>
 
 <script>
-    const alphabet = [
-        {h:'あ',r:'a'},{h:'い',r:'i'},{h:'う',r:'u'},{h:'え',r:'e'},{h:'お',r:'o'},
-        {h:'か',r:'ka'},{h:'き',r:'ki'},{h:'く',r:'ku'},{h:'け',r:'ke'},{h:'こ',r:'ko'},
-        {h:'さ',r:'sa'},{h:'し',r:'shi'},{h:'す',r:'su'},{h:'せ',r:'se'},{h:'そ',r:'so'},
-        {h:'た',r:'ta'},{h:'ち',r:'chi'},{h:'つ',r:'tsu'},{h:'て',r:'te'},{h:'と',r:'to'},
-        {h:'な',r:'na'},{h:'に',r:'ni'},{h:'ぬ',r:'nu'},{h:'ね',r:'ne'},{h:'の',r:'no'},
-        {h:'は',r:'ha'},{h:'ひ',r:'hi'},{h:'ふ',r:'fu'},{h:'へ',r:'he'},{h:'ほ',r:'ho'},
-        {h:'ま',r:'ma'},{h:'み',r:'mi'},{h:'む',r:'mu'},{h:'め',r:'me'},{h:'も',r:'mo'},
-        {h:'や',r:'ya'},{h:'ゆ',r:'yu'},{h:'よ',r:'yo'},
-        {h:'ら',r:'ra'},{h:'り',r:'ri'},{h:'る',r:'ru'},{h:'れ',r:'re'},{h:'ろ',r:'ro'},
-        {h:'わ',r:'wa'},{h:'を',r:'wo'},{h:'ん',r:'n'}
+    const rows = [
+        { label: 'A–O', chars: [{h:'あ',r:'a'},{h:'い',r:'i'},{h:'う',r:'u'},{h:'え',r:'e'},{h:'お',r:'o'}] },
+        { label: 'Ka–Ko', chars: [{h:'か',r:'ka'},{h:'き',r:'ki'},{h:'く',r:'ku'},{h:'け',r:'ke'},{h:'こ',r:'ko'}] },
+        { label: 'Sa–So', chars: [{h:'さ',r:'sa'},{h:'し',r:'shi'},{h:'す',r:'su'},{h:'せ',r:'se'},{h:'そ',r:'so'}] },
+        { label: 'Ta–To', chars: [{h:'た',r:'ta'},{h:'ち',r:'chi'},{h:'つ',r:'tsu'},{h:'て',r:'te'},{h:'と',r:'to'}] },
+        { label: 'Na–No', chars: [{h:'な',r:'na'},{h:'に',r:'ni'},{h:'ぬ',r:'nu'},{h:'ね',r:'ne'},{h:'の',r:'no'}] },
+        { label: 'Ha–Ho', chars: [{h:'は',r:'ha'},{h:'ひ',r:'hi'},{h:'ふ',r:'fu'},{h:'へ',r:'he'},{h:'ほ',r:'ho'}] },
+        { label: 'Ma–Mo', chars: [{h:'ま',r:'ma'},{h:'み',r:'mi'},{h:'む',r:'mu'},{h:'め',r:'me'},{h:'も',r:'mo'}] },
+        { label: 'Ya–Yo', chars: [{h:'や',r:'ya'},{h:'ゆ',r:'yu'},{h:'よ',r:'yo'}] },
+        { label: 'Ra–Ro', chars: [{h:'ら',r:'ra'},{h:'り',r:'ri'},{h:'る',r:'ru'},{h:'れ',r:'re'},{h:'ろ',r:'ro'}] },
+        { label: 'Wa–N', chars: [{h:'わ',r:'wa'},{h:'を',r:'wo'},{h:'ん',r:'n'}] }
+    ];
+    const speedLevels = [
+        { label: 'Slow', pixelsPerSecond: 42 },
+        { label: 'Normal', pixelsPerSecond: 72 },
+        { label: 'Fast', pixelsPerSecond: 112 }
     ];
 
-    let idx = 0, score = 0, combo = 0, y = -120, active = false, paused = false, input = "";
-    const charDiv = document.getElementById('hiragana-char'), scoreDiv = document.getElementById('score-val');
+    let deck = [], idx = 0, score = 0, combo = 0, y = -120;
+    let active = false, paused = false, input = '', speedIndex = 1, previousFrameTime = 0;
+    const charDiv = document.getElementById('hiragana-char');
+    const scoreDiv = document.getElementById('score-val');
     const overlay = document.getElementById('overlay');
+    const rowOptions = document.getElementById('row-options');
+
+    rows.forEach((row, index) => {
+        const label = document.createElement('label');
+        label.className = 'row-option';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = String(index);
+        checkbox.checked = index === 0;
+        checkbox.addEventListener('change', updateDifficulty);
+        label.append(checkbox, document.createTextNode(`${row.label} (${row.chars.length})`));
+        rowOptions.append(label);
+    });
+    updateDifficulty();
+
+    function updateDifficulty() {
+        const selectedCount = rowOptions.querySelectorAll('input:checked').length;
+        document.getElementById('selected-rows').textContent =
+            `${selectedCount} row${selectedCount === 1 ? '' : 's'} selected`;
+        document.getElementById('start-btn').disabled = selectedCount === 0;
+    }
 
     function startGame() {
+        const selectedRows = [...rowOptions.querySelectorAll('input:checked')]
+            .map(checkbox => rows[Number(checkbox.value)]);
+        deck = selectedRows.flatMap(row => row.chars);
+        if (deck.length === 0) return;
+        for (let i = deck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [deck[i], deck[j]] = [deck[j], deck[i]];
+        }
         document.getElementById('start-screen').style.display = 'none';
         document.getElementById('game-area').style.display = 'block';
+        idx = 0;
+        score = 0;
+        combo = 0;
+        scoreDiv.textContent = score;
         active = true;
+        paused = false;
+        previousFrameTime = 0;
         spawnChar();
         requestAnimationFrame(gameLoop);
     }
 
     function spawnChar() {
-        if(idx >= alphabet.length) { 
-            active = false; 
-            showModal('win-modal'); 
-            return; 
+        if (idx >= deck.length) {
+            active = false;
+            showModal('win-modal');
+            return;
         }
-        charDiv.innerText = alphabet[idx].h;
-        charDiv.style.left = (Math.random() * 600) + 100 + 'px';
+        charDiv.textContent = deck[idx].h;
+        const availableWidth = Math.max(0, document.getElementById('game-area').clientWidth - 120);
+        charDiv.style.left = `${Math.random() * availableWidth}px`;
         y = -120;
-        input = "";
+        input = '';
     }
 
-    function gameLoop() {
-        if(active && !paused) {
-            y += 0.8; 
-            charDiv.style.top = y + 'px';
-            if(y > 440) {
+    function gameLoop(timestamp) {
+        if (!active) return;
+        if (previousFrameTime === 0) previousFrameTime = timestamp;
+        const elapsedSeconds = Math.min((timestamp - previousFrameTime) / 1000, 0.05);
+        previousFrameTime = timestamp;
+
+        if (!paused) {
+            y += speedLevels[speedIndex].pixelsPerSecond * elapsedSeconds;
+            charDiv.style.top = `${y}px`;
+            if (y > document.getElementById('game-area').clientHeight - 160) {
                 active = false;
                 showModal('fail-modal');
+                return;
             }
         }
         requestAnimationFrame(gameLoop);
     }
 
-    window.addEventListener('keydown', (e) => {
-        if(!active || paused || e.key === 'Shift') return;
-        input += e.key.toLowerCase();
-        let target = alphabet[idx].r;
-        if(target.startsWith(input)) {
-            if(input === target) {
+    window.addEventListener('keydown', (event) => {
+        if (!active || paused || event.key.length !== 1 || !/^[a-z]$/i.test(event.key)) return;
+        input += event.key.toLowerCase();
+        const target = deck[idx].r;
+        if (target.startsWith(input)) {
+            if (input === target) {
                 score += 100;
                 combo++;
-                if(combo % 3 === 0) { score += 500; }
-                scoreDiv.innerText = score;
+                if (combo % 3 === 0) score += 500;
+                scoreDiv.textContent = score;
                 idx++;
                 spawnChar();
             }
-        } else { input = ""; }
+        } else {
+            input = '';
+        }
     });
 
     function showModal(id) {
@@ -165,30 +331,44 @@
     }
 
     function togglePause() {
+        if (!active) return;
         paused = !paused;
-        const btn = document.getElementById('pause-btn');
-        if(paused) {
-            btn.innerHTML = '再開<span class="en-sub" style="color:white;">Resume</span>';
-            overlay.style.display = 'block';
-        } else {
-            btn.innerHTML = '一時停止<span class="en-sub" style="color:white;">Pause</span>';
-            overlay.style.display = 'none';
-        }
+        document.getElementById('pause-btn').textContent = paused ? 'Resume' : 'Pause';
+        overlay.style.display = paused ? 'block' : 'none';
+    }
+
+    function exitGame() {
+        active = false;
+        paused = false;
+        previousFrameTime = 0;
+        overlay.style.display = 'none';
+        document.getElementById('fail-modal').style.display = 'none';
+        document.getElementById('win-modal').style.display = 'none';
+        document.getElementById('pause-btn').textContent = 'Pause';
+        document.getElementById('game-area').style.display = 'none';
+        document.getElementById('start-screen').style.display = 'block';
+    }
+
+    function cycleSpeed() {
+        speedIndex = (speedIndex + 1) % speedLevels.length;
+        document.getElementById('speed-btn').textContent = `Speed: ${speedLevels[speedIndex].label}`;
     }
 
     function tryContinue() {
-        if(score >= 100) {
-            score -= 100;
-            scoreDiv.innerText = score;
-            document.getElementById('fail-modal').style.display = 'none';
-            overlay.style.display = 'none';
-            active = true;
-            y = -120;
-            input = "";
-        } else {
-            alert("Points insufficient!");
-            location.reload();
+        if (score < 100) {
+            alert('Not enough points. You need 100 points to continue.');
+            return;
         }
+        score -= 100;
+        scoreDiv.textContent = score;
+        document.getElementById('fail-modal').style.display = 'none';
+        overlay.style.display = 'none';
+        active = true;
+        paused = false;
+        previousFrameTime = 0;
+        y = -120;
+        input = '';
+        requestAnimationFrame(gameLoop);
     }
 </script>
 </body>
